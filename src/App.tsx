@@ -3,16 +3,33 @@ import { Container, Grid } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import { StyledButtonTrue, StyledButtonFalse } from './style';
 import { connect } from 'react-redux';
-import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { IStore } from './reducers';
+import { Difficulty, getQuizListItem } from './action/quiz';
 
 interface OwnProps {}
 interface StateProps {}
-interface DispatchProps {}
+interface DispatchProps {
+  getQuizListItem: typeof getQuizListItem;
+}
+interface LocalStateProps {
+  value: string;
+}
 type Props = OwnProps & StateProps & DispatchProps;
 
-export class App extends Component<Props> {
+export class App extends Component<Props, LocalStateProps> {
+  constructor(props: any) {
+    super(props);
+
+    this.state = {
+      value: ''
+    };
+  }
+
+  componentDidMount() {
+    this.props.getQuizListItem(10, Difficulty.easy);
+  }
+
   private renderHeader = () => {
     return (
       <Grid
@@ -81,9 +98,12 @@ const mapStateToProps = (state: IStore): StateProps => {
 };
 
 const mapDispatchToProps = (
-  dispatch: ThunkDispatch<{}, {}, AnyAction>
+  dispatch: ThunkDispatch<{}, {}, any>
 ): DispatchProps => {
-  return {};
+  return {
+    getQuizListItem: (questionAmount: number, difficulty: Difficulty) =>
+      dispatch(getQuizListItem(questionAmount, difficulty))
+  };
 };
 
 export default connect<StateProps, DispatchProps, OwnProps, IStore>(

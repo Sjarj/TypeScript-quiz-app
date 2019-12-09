@@ -4,7 +4,7 @@ import { TYPES } from './action-types';
 import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 
-enum Difficulty {
+export enum Difficulty {
   easy = 'easy',
   medium = 'medium',
   hard = 'hard'
@@ -16,7 +16,7 @@ export const getQuizListItem = (
 ) => {
   return async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
     const r = await axios.get<IQuizList>(
-      `ttps://opentdb.com/api.php?amount=${questionAmount}&difficulty=${difficulty}&type=boolean`
+      `https://opentdb.com/api.php?amount=${questionAmount}&difficulty=${difficulty}&type=boolean`
     );
     dispatch({ type: TYPES.getQuizListItems, payload: r.data.results });
   };
