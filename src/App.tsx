@@ -5,7 +5,12 @@ import { StyledButtonTrue, StyledButtonFalse } from './style';
 import { connect } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { IStore } from './reducers';
-import { Difficulty, getQuizListItem } from './action/quiz';
+import {
+  Difficulty,
+  getQuizListItem,
+  giveAnswer,
+  restart
+} from './action/quiz';
 import { IQuizListItem } from './models';
 import { getCurrentListItem } from '../src/selectors/quiz';
 
@@ -18,6 +23,8 @@ interface StateProps {
 }
 interface DispatchProps {
   getQuizListItem: typeof getQuizListItem;
+  giveAnswer: typeof giveAnswer;
+  restart: typeof restart;
 }
 interface LocalStateProps {
   value: string;
@@ -50,7 +57,6 @@ export class App extends Component<Props, LocalStateProps> {
           <div style={{ color: '#2858fb' }}>Quizy</div>
         </Box>
         <Box mt={10} fontSize={20} className='txt'>
-          {' '}
           Score :{this.props.score}/{this.props.quizListLength}
         </Box>
       </Grid>
@@ -72,7 +78,7 @@ export class App extends Component<Props, LocalStateProps> {
         style={{ minHeight: '40vh' }}
       >
         <div className='txt question_number'>
-          Question N° {currentQuizItemIndex}/{quizListLength}
+          Question N° {currentQuizItemIndex + 1}/{quizListLength}
         </div>
         <div className='txt question_number'>
           Category {currentQuizItem!.category}
@@ -85,26 +91,67 @@ export class App extends Component<Props, LocalStateProps> {
     );
   };
 
+  private answerQuestion = (answer: 'True' | 'False') => () => {
+    const isCorrectAnswer =
+      this.props.currentQuizItem!.correct_answer === answer;
+    this.props.giveAnswer(
+      isCorrectAnswer,
+      this.props.currentQuizItemIndex === this.props.quizListLength - 1
+    );
+  };
+
   private renderButton = () => {
+    if (this.props.currentQuizItemIndex < this.props.quizListLength - 1) {
+      return (
+        <Grid
+          container
+          direction='row'
+          alignItems='center'
+          justify='space-evenly'
+        >
+          <StyledButtonTrue onClick={this.answerQuestion('True')}>
+            TRUE
+          </StyledButtonTrue>
+          <StyledButtonFalse onClick={this.answerQuestion('False')}>
+            FALSE
+          </StyledButtonFalse>
+        </Grid>
+      );
+    } else {
+      return (
+        <Grid container direction='column' alignItems='center' justify='center'>
+          <Box
+            mt={10}
+            style={{ marginBottom: '5%' }}
+            fontSize={20}
+            className='txt'
+          >
+            Final score :{this.props.score}/{this.props.quizListLength}
+          </Box>
+          <StyledButtonTrue onClick={this.props.restart}>
+            Restart
+          </StyledButtonTrue>
+        </Grid>
+      );
+    }
+  };
+
+  private renderContent = () => {
     return (
-      <Grid
-        container
-        direction='row'
-        alignItems='center'
-        justify='space-evenly'
-      >
-        <StyledButtonTrue>TRUE</StyledButtonTrue>
-        <StyledButtonFalse>FALSE</StyledButtonFalse>
-      </Grid>
+      <>
+        {this.renderHeader()}
+        {this.props.currentQuizItem &&
+          this.props.currentQuizItemIndex < this.props.quizListLength - 1 &&
+          this.renderQuestionInfo()}
+        {this.renderButton()}
+      </>
     );
   };
 
   render() {
     return (
       <Container maxWidth='lg'>
-        {this.renderHeader()}
-        {this.props.currentQuizItem && this.renderQuestionInfo()}
-        {this.renderButton()}
+        <>{this.props.currentQuizItem && this.renderContent()}</>
       </Container>
     );
   }
@@ -125,7 +172,10 @@ const mapDispatchToProps = (
 ): DispatchProps => {
   return {
     getQuizListItem: (questionAmount: number, difficulty: Difficulty) =>
-      dispatch(getQuizListItem(questionAmount, difficulty))
+      dispatch(getQuizListItem(questionAmount, difficulty)),
+    giveAnswer: (isCorrectAnswer: boolean, isLastQuestion: boolean) =>
+      dispatch(giveAnswer(isCorrectAnswer, isLastQuestion)),
+    restart: () => dispatch(restart())
   };
 };
 
