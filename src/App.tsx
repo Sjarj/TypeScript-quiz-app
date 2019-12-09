@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Grid } from '@material-ui/core';
+import { Container, Grid, Snackbar } from '@material-ui/core';
 import Box from '@material-ui/core/Box';
 import { StyledButtonTrue, StyledButtonFalse } from './style';
 import { connect } from 'react-redux';
@@ -27,7 +27,9 @@ interface DispatchProps {
   restart: typeof restart;
 }
 interface LocalStateProps {
-  value: string;
+  message: string;
+  isOpen: boolean;
+  className: 'good' | 'wrong';
 }
 type Props = OwnProps & StateProps & DispatchProps;
 
@@ -36,7 +38,9 @@ export class App extends Component<Props, LocalStateProps> {
     super(props);
 
     this.state = {
-      value: ''
+      message: '',
+      isOpen: false,
+      className: 'good'
     };
   }
 
@@ -98,6 +102,11 @@ export class App extends Component<Props, LocalStateProps> {
       isCorrectAnswer,
       this.props.currentQuizItemIndex === this.props.quizListLength - 1
     );
+    this.setState({
+      message: isCorrectAnswer ? 'Well done !' : 'Nope.',
+      className: isCorrectAnswer ? 'good' : 'wrong',
+      isOpen: true
+    });
   };
 
   private renderButton = () => {
@@ -136,6 +145,10 @@ export class App extends Component<Props, LocalStateProps> {
     }
   };
 
+  private onSnackBarClose = () => {
+    this.setState({ isOpen: false });
+  };
+
   private renderContent = () => {
     return (
       <>
@@ -144,6 +157,14 @@ export class App extends Component<Props, LocalStateProps> {
           this.props.currentQuizItemIndex < this.props.quizListLength - 1 &&
           this.renderQuestionInfo()}
         {this.renderButton()}
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          autoHideDuration={400}
+          open={this.state.isOpen}
+          onClose={this.onSnackBarClose}
+          message={this.state.message}
+          className={this.state.className}
+        />
       </>
     );
   };
