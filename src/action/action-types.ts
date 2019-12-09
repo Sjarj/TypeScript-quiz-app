@@ -1,3 +1,6 @@
 export const TYPES = {
-  getQuizListItems: 'getQuizListItems'
+  getQuizListItems: 'getQuizListItems',
+  incrementScore: 'incrementScore',
+  setNextQuestion: 'setNextQuestion',
+  restart: 'restart'
 };
