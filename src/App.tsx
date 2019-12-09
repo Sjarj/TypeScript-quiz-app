@@ -6,9 +6,16 @@ import { connect } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { IStore } from './reducers';
 import { Difficulty, getQuizListItem } from './action/quiz';
+import { IQuizListItem } from './models';
+import { getCurrentListItem } from '../src/selectors/quiz';
 
 interface OwnProps {}
-interface StateProps {}
+interface StateProps {
+  currentQuizItem?: IQuizListItem;
+  currentQuizItemIndex: number;
+  quizListLength: number;
+  score: number;
+}
 interface DispatchProps {
   getQuizListItem: typeof getQuizListItem;
 }
@@ -44,13 +51,18 @@ export class App extends Component<Props, LocalStateProps> {
         </Box>
         <Box mt={10} fontSize={20} className='txt'>
           {' '}
-          Score : TODO / TODO
+          Score :{this.props.score}/{this.props.quizListLength}
         </Box>
       </Grid>
     );
   };
 
   private renderQuestionInfo = () => {
+    const {
+      quizListLength,
+      currentQuizItem,
+      currentQuizItemIndex
+    } = this.props;
     return (
       <Grid
         container
@@ -59,11 +71,16 @@ export class App extends Component<Props, LocalStateProps> {
         justify='center'
         style={{ minHeight: '40vh' }}
       >
-        <div className='txt question_number'>Question N° TODO / TODO </div>
-        <div className='txt question_number'> Category TODO </div>
-        <div className='txt'>
-          TypeScript Quiz starter ! Ici nous devrions afficher une question !
+        <div className='txt question_number'>
+          Question N° {currentQuizItemIndex}/{quizListLength}
         </div>
+        <div className='txt question_number'>
+          Category {currentQuizItem!.category}
+        </div>
+        <div
+          className='txt'
+          dangerouslySetInnerHTML={{ __html: currentQuizItem!.question }}
+        ></div>
       </Grid>
     );
   };
@@ -86,7 +103,7 @@ export class App extends Component<Props, LocalStateProps> {
     return (
       <Container maxWidth='lg'>
         {this.renderHeader()}
-        {this.renderQuestionInfo()}
+        {this.props.currentQuizItem && this.renderQuestionInfo()}
         {this.renderButton()}
       </Container>
     );
@@ -94,7 +111,13 @@ export class App extends Component<Props, LocalStateProps> {
 }
 
 const mapStateToProps = (state: IStore): StateProps => {
-  return {};
+  const s = state as IStore;
+  return {
+    currentQuizItem: getCurrentListItem(s),
+    currentQuizItemIndex: s.quiz.currentQuizItemIndex,
+    quizListLength: s.quiz.quizListItem.length,
+    score: s.quiz.score
+  };
 };
 
 const mapDispatchToProps = (
